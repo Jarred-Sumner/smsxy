@@ -1,7 +1,7 @@
 require 'twilio-ruby'
 module SMSXY
   class Adaptor
-    class Twilio < Adaptor
+    class TwilioAdaptor < Adaptor
     
       def self.text(message, to)
         raise ArgumentError, "Twilio requires an Account SID to send outgoing text messages. Set SMSXY::Adaptor::Twilio.account_sid to your Account SID" if self.account_sid.nil?
