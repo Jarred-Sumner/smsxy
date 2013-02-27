@@ -1,3 +1,4 @@
+require 'hash_regex'
 module SMSXY
   class Router
     class Namespace
