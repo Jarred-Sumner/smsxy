@@ -3,7 +3,7 @@ module SMSXY
   class Adaptor
     class TwilioAdaptor < Adaptor
     
-      def self.text(message, to)
+      def self.send_text(message, to)
         raise ArgumentError, "Twilio requires an Account SID to send outgoing text messages. Set SMSXY::Adaptor::Twilio.account_sid to your Account SID" if self.account_sid.nil?
         raise ArgumentError, "Twilio requires a token to send outgoing text messages. Set SMSXY::Adaptor::Twilio.token to your token" if self.token.nil?
         params =
@@ -29,6 +29,10 @@ module SMSXY
 
       def self.token
         @token
+      end
+
+      def self.adaptor
+        self
       end
 
       private

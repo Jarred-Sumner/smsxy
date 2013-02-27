@@ -65,7 +65,7 @@ module SMSXY
       end
 
       def reply(message)
-        SMSXY::Adaptor.adaptor.text(message, SMSXY::Adaptor.adaptor.phone)
+        SMSXY::Adaptor.adaptor.text(message, self.sms.phone)
       end
 
       alias_method :h, :help
