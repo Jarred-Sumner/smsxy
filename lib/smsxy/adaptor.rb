@@ -1,4 +1,4 @@
-require 'smsxy/adaptor/twilio'
+require 'smsxy/adaptor/twilio_adaptor'
 
 # Eventually, it'd be good to support other services
 module SMSXY
