@@ -8,7 +8,7 @@ module SMSXY
         raise ArgumentError, "Twilio requires a token to send outgoing text messages. Set SMSXY::Adaptor::Twilio.token to your token" if self.token.nil?
         params =
         {
-          :from => self.phone,
+          :from => super.phone,
           :to   => to,
           :body => message
         }
