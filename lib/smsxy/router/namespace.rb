@@ -1,8 +1,9 @@
 require 'hash_regex'
+require 'smsxy/adaptor'
 module SMSXY
   class Router
     class Namespace
-      attr_accessor :matcher, :block, :parent
+      attr_accessor :matcher, :block, :parent, :sms
       DELIMITER = " ".freeze
 
       def match(matcher, &block)
@@ -31,41 +32,24 @@ module SMSXY
       def receive(sms)
         # Split up the body of the SMS by the delimiter
         components = sms.message.split(DELIMITER)
-        puts "Components: #{components.inspect}"
-        puts "Matchers: #{matchers.inspect}"
+        # puts "Components: #{components.inspect}"
+        # puts "Matchers: #{matchers.inspect}"
         # Let's check if we have any matchers that match that SMS
         if !matchers[sms.message].nil?
           # Cool, let's call that method now with the sms
           matchers[sms.message].call
         # Let's look for matching namespaces
-        elsif namespaces[components.first]
-          namespace = namespaces[components.first]
-          namespace.params.push(components.first)
-          sms.message = components[1..-1].join(DELIMITER)
-          namespace.receive(sms)
+        elsif space = namespaces[components.first]
+          space.sms          = self.sms
+          sms.message        = components[1..-1].join(DELIMITER)
+          space.receive(sms)
         else
           @help.call
         end
       end
 
-      def params
-        @params ||= []
-      end
-
       def matchers
         @matchers ||= {}.to_hash_regex
-      end
-
-      def params
-        if @params.nil?
-          if self.parent
-            @params = self.parent.params
-          else
-            @params = []
-          end
-          @params.unshift(matcher)
-        end
-        @params
       end
 
       def call
@@ -74,6 +58,14 @@ module SMSXY
 
       def namespaces
         @namespaces ||= {}.to_hash_regex
+      end
+
+      def params
+        self.sms.message.split(DELIMITER)
+      end
+
+      def reply(message)
+        SMSXY::Adaptor.adaptor.text(message, SMSXY::Adaptor.adaptor.phone)
       end
 
       alias_method :h, :help

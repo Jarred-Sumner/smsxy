@@ -9,6 +9,7 @@ module SMSXY
     end
 
     def self.receive(sms)
+      @root_namespace.sms = sms
       @root_namespace.receive(sms)
     end
 
