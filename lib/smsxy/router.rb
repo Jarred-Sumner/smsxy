@@ -1,4 +1,3 @@
-require 'smsxy/router/dsl'
 require 'smsxy/router/namespace'
 module SMSXY
   class Router
