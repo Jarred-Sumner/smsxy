@@ -1,14 +1,17 @@
 require 'twilio-ruby'
 module SMSXY
-  class Adaptor
-    class TwilioAdaptor < Adaptor
+  module Adaptor
+    class TwilioAdaptor
     
-      def self.send_text(message, to)
+      def self.text(message, to)
+        raise ArgumentError, "Phone number cannot be blank" if to.nil? || to.length == 0
+        raise ArgumentError, "Message cannot be blank" if message.nil? || message.length == 0
+        raise ArgumentError, "Sending outgoing text messages requires an incoming phone number" if adaptor.phone.nil? || adaptor.phone.length == 0
         raise ArgumentError, "Twilio requires an Account SID to send outgoing text messages. Set SMSXY::Adaptor::Twilio.account_sid to your Account SID" if self.account_sid.nil?
         raise ArgumentError, "Twilio requires a token to send outgoing text messages. Set SMSXY::Adaptor::Twilio.token to your token" if self.token.nil?
         params =
         {
-          :from => super.phone,
+          :from => self.phone,
           :to   => to,
           :body => message
         }
@@ -33,6 +36,10 @@ module SMSXY
 
       def self.adaptor
         self
+      end
+
+      def self.phone
+        SMSXY::Adaptor.phone
       end
 
       private
