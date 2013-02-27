@@ -3,7 +3,8 @@ require 'smsxy/adaptor'
 module SMSXY
   class Router
     class Namespace
-      attr_accessor :matcher, :block, :parent, :sms
+      @@sms = nil
+      attr_accessor :matcher, :block, :parent, :message
       DELIMITER = " ".freeze
 
       def match(matcher, &block)
@@ -29,22 +30,39 @@ module SMSXY
         @help = block
       end
 
-      def receive(sms)
+      def receive(message)
+        self.message = message
         # Split up the body of the SMS by the delimiter
-        components = sms.message.split(DELIMITER)
+        components = message.split(DELIMITER)
         # puts "Components: #{components.inspect}"
         # puts "Matchers: #{matchers.inspect}"
         # Let's check if we have any matchers that match that SMS
-        if !matchers[sms.message].nil?
+        if !matchers[message].nil?
           # Cool, let's call that method now with the sms
-          matchers[sms.message].call
+          matchers[message].call
         # Let's look for matching namespaces
         elsif space = namespaces[components.first]
-          space.sms          = self.sms
-          sms.message        = components[1..-1].join(DELIMITER)
-          space.receive(sms)
+          space.receive(components[1..-1].join(DELIMITER))
+        elsif self.help?
+          self.eval(&self.help)
+        end
+      end
+
+      def help?
+        return true if @help.nil?
+        if !self.parent.nil?
+          self.parent.help?
         else
-          @help.call
+          false
+        end
+      end
+
+      def help
+        return @help unless @help.nil?
+        if !self.parent.nil?
+          self.parent.help
+        else
+          puts "No matcher for that text message"
         end
       end
 
@@ -61,11 +79,23 @@ module SMSXY
       end
 
       def params
-        self.sms.message.split(DELIMITER)
+        SMSXY::Router::Namespace.sms.message.split(DELIMITER)
       end
 
       def reply(message)
-        SMSXY.text(message, self.sms.phone)
+        SMSXY.text(message, SMSXY::Router::Namespace.sms.phone)
+      end
+
+      def self.sms
+        @sms
+      end
+
+      def self.sms=(val)
+        @sms = val
+      end
+
+      def email
+        /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i
       end
 
       alias_method :h, :help
