@@ -9,4 +9,9 @@ module SMSXY
     SMSXY::Adaptor.adaptor.text(message, to)
   end
 
+  def self.receive(params)
+    sms = SMSXY::Adaptor::TwilioAdaptor.receive(params)
+    SMSXY::Router.receive(sms)
+  end
+
 end

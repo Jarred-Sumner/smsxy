@@ -42,6 +42,13 @@ module SMSXY
         SMSXY::Adaptor.phone
       end
 
+      def self.receive(params)
+        sms         = SMSXY::SMS.new
+        sms.message = params['Body']
+        sms.phone   = params['From']
+        sms
+      end
+
       private
 
       def self.client

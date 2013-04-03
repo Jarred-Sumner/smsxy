@@ -16,7 +16,7 @@ require 'hash'
 
 
 # In a Hash, there would be no key named " ", but since this is a HashRegex
-# It'll match the regex, /\s/ to " " and it'll return the appropriate value
+# It'll match the regex, /\s/ to " " and return the appropriate value
 class HashRegex < Hash
   def [](key)
     if key.class == String
