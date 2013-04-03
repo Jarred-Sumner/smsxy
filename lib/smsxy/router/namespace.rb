@@ -5,10 +5,13 @@ module SMSXY
     class Namespace
       @@sms = nil
       attr_accessor :matcher, :block, :parent, :message
+      # ::nordoc
       DELIMITER = " ".freeze
+      EMAIL_REGEX = /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i.freeze
 
       def match(matcher, &block)
         raise ArgumentError, "You must provide a block with each route" if block.nil?
+        matcher = email if matcher.to_s == 'email'
         if matcher.class == String || matcher.class == Regexp
           matchers[matcher] = block
         else
@@ -16,7 +19,20 @@ module SMSXY
         end
       end
 
+      def help(&block)
+        if !block.nil?
+          @help = block
+        elsif !@help.nil?
+          @help.call
+        elsif self.parent && self.parent.help?
+          self.parent.help
+        else
+          default_help
+        end
+      end
+
       def namespace(matcher, &routes)
+        matcher = email if matcher.to_s == 'email'
         raise ArgumentError, "Matcher must be Regexp or String." if matcher.class != Regexp && matcher.class != String
         namespace = SMSXY::Router::Namespace.new
         namespace.matcher = matcher
@@ -24,10 +40,6 @@ module SMSXY
         namespace.parent = self if self.respond_to? "matcher"
         namespaces[matcher] = namespace
         namespace
-      end
-
-      def help(&block)
-        @help = block
       end
 
       def receive(message)
@@ -43,27 +55,13 @@ module SMSXY
         # Let's look for matching namespaces
         elsif space = namespaces[components.first]
           space.receive(components[1..-1].join(DELIMITER))
-        elsif self.help?
-          self.eval(&self.help)
+        else
+          help
         end
       end
 
       def help?
-        return true if @help.nil?
-        if !self.parent.nil?
-          self.parent.help?
-        else
-          false
-        end
-      end
-
-      def help
-        return @help unless @help.nil?
-        if !self.parent.nil?
-          self.parent.help
-        else
-          puts "No matcher for that text message"
-        end
+        !@help.nil?
       end
 
       def matchers
@@ -71,7 +69,7 @@ module SMSXY
       end
 
       def call
-        self.eval(&block)
+        self.instance_eval(&block)
       end
 
       def namespaces
@@ -95,10 +93,13 @@ module SMSXY
       end
 
       def email
-        /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i
+        EMAIL_REGEX
       end
 
-      alias_method :h, :help
+      def default_help
+        Proc.new { puts "No matcher for message: \"#{self.message}\"! Also, no \"help\" block to handle unmatched messages." }
+      end
+
     end
   end
 end
