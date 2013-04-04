@@ -9,8 +9,7 @@ module SMSXY
     end
 
     def self.receive(sms)
-      SMSXY::Router::Namespace.sms = sms
-      @root_namespace.receive(sms.message)
+      @root_namespace.receive(sms)
     end
 
     def self.root

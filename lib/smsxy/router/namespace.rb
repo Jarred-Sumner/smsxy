@@ -4,7 +4,7 @@ module SMSXY
   class Router
     class Namespace
       @@sms = nil
-      attr_accessor :matcher, :block, :parent, :message
+      attr_accessor :matcher, :block, :parent, :sms
       # ::nordoc
       DELIMITER = " ".freeze
       EMAIL_REGEX = /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i.freeze
@@ -63,19 +63,21 @@ module SMSXY
         end
       end
 
-      def receive(message)
-        self.message = message
+      def receive(sms)
+        self.sms = sms
         # Split up the body of the SMS by the delimiter
-        components = message.split(DELIMITER)
+        components = sms.message.split(DELIMITER)
         # puts "Components: #{components.inspect}"
         # puts "Matchers: #{matchers.inspect}"
         # Let's check if we have any matchers that match that SMS
-        if !matchers[message].nil?
+        if !matchers[sms.message].nil?
           # Cool, let's call that method now with the sms
-          matchers[message].call
+          matchers[sms.message].call
         # Let's look for matching namespaces
         elsif space = namespaces[components.first]
-          space.receive(components[1..-1].join(DELIMITER))
+          abbrievd_sms         = sms
+          abbrievd_sms.message = components[1..-1].join(DELIMITER)
+          space.receive(abbrievd_sms)
         else
           help
         end
@@ -98,19 +100,11 @@ module SMSXY
       end
 
       def params
-        SMSXY::Router::Namespace.sms.message.split(DELIMITER)
+        self.sms.full_message.split(DELIMITER)
       end
 
       def reply(message)
-        SMSXY.text(message, SMSXY::Router::Namespace.sms.phone)
-      end
-
-      def self.sms
-        @sms
-      end
-
-      def self.sms=(val)
-        @sms = val
+        SMSXY.text(message, self.sms.phone)
       end
 
       def email
@@ -122,7 +116,7 @@ module SMSXY
       end
 
       def default_help
-        Proc.new { puts "No matcher for message: \"#{self.message}\"! Also, no \"help\" block to handle unmatched messages." }
+        Proc.new { puts "No matcher for message: \"#{self.sms.message}\"! Also, no \"help\" block to handle unmatched messages." }
       end
 
     end
