@@ -4,7 +4,7 @@ module SMSXY
   class Router
     class Namespace
       @@sms = nil
-      attr_accessor :matcher, :block, :parent, :sms
+      attr_accessor :matcher, :block, :parent, :sms, :current_match
       # ::nordoc
       DELIMITER = " ".freeze
       EMAIL_REGEX = /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i.freeze
@@ -40,6 +40,26 @@ module SMSXY
         end
       end
 
+      def before(&block)
+        @before = block
+      end
+
+      def before!
+        @before.call unless @before.nil?
+      end
+
+      def after(&block)
+        @after = block
+      end
+
+      def after!
+        @after.call unless @after.nil?
+      end
+
+      def redirect_to(method_sym)
+        self.current_match = method(method_sym).to_proc
+      end
+
       def namespace(matcher, &routes)
         matcher = email if matcher.to_s == 'email'
         matcher = phone if matcher.to_s == 'phone'
@@ -63,6 +83,17 @@ module SMSXY
         end
       end
 
+      def matches?(message)
+        !matchers[sms.message].nil?
+      end
+
+      def match!(message)
+        self.current_match = matchers[sms.message]
+        before!
+        self.current_match.call
+        after!
+      end
+
       def receive(sms)
         self.sms = sms
         # Split up the body of the SMS by the delimiter
@@ -70,9 +101,9 @@ module SMSXY
         # puts "Components: #{components.inspect}"
         # puts "Matchers: #{matchers.inspect}"
         # Let's check if we have any matchers that match that SMS
-        if !matchers[sms.message].nil?
+        if matches?(sms.message)
           # Cool, let's call that method now with the sms
-          matchers[sms.message].call
+          match!(sms.message)
         # Let's look for matching namespaces
         elsif space = namespaces[components.first]
           abbrievd_sms         = sms
