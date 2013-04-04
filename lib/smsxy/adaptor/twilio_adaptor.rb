@@ -9,13 +9,16 @@ module SMSXY
         raise ArgumentError, "Sending outgoing text messages requires an incoming phone number" if adaptor.phone.nil? || adaptor.phone.length == 0
         raise ArgumentError, "Twilio requires an Account SID to send outgoing text messages. Set SMSXY::Adaptor::Twilio.account_sid to your Account SID" if self.account_sid.nil?
         raise ArgumentError, "Twilio requires a token to send outgoing text messages. Set SMSXY::Adaptor::Twilio.token to your token" if self.token.nil?
-        params =
-        {
-          :from => self.phone,
-          :to   => to,
-          :body => message
-        }
-        self.client.account.sms.messages.create(params)
+        message_parts = message.split(/(.{160})/)
+        message_parts.each do |message_part|
+          params =
+          {
+            :from => self.phone,
+            :to   => to,
+            :body => message_part
+          }
+          self.client.account.sms.messages.create(params)
+        end
       end
 
       def self.account_sid=(val)
