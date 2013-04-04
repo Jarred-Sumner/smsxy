@@ -9,11 +9,20 @@ module SMSXY
       DELIMITER = " ".freeze
       EMAIL_REGEX = /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i.freeze
 
+      TEN_DIGIT_US_PHONE_NUMBER           = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/.freeze
+      TEN_DIGIT_US_PHONE_NUMBER_WITH_ONE  = /^(?:\+?1[-. ]?)?\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/.freeze
+      INTERNATIONAL_PHONE_NUMBER          = /^\+(?:[0-9] ?){6,14}[0-9]$/.freeze
+
       def match(matcher, &block)
         raise ArgumentError, "You must provide a block with each route" if block.nil?
         matcher = email if matcher.to_s == 'email'
+        matcher = phone if matcher.to_s == 'phone'
         if matcher.class == String || matcher.class == Regexp
           matchers[matcher] = block
+        elsif matcher.class == Array
+          matcher.each do |match|
+            matchers[match] = block
+          end
         else
           raise ArgumentError, "Can only match text messages against strings or regexes"
         end
@@ -33,13 +42,25 @@ module SMSXY
 
       def namespace(matcher, &routes)
         matcher = email if matcher.to_s == 'email'
-        raise ArgumentError, "Matcher must be Regexp or String." if matcher.class != Regexp && matcher.class != String
-        namespace = SMSXY::Router::Namespace.new
-        namespace.matcher = matcher
-        namespace.instance_eval(&routes)
-        namespace.parent = self if self.respond_to? "matcher"
-        namespaces[matcher] = namespace
-        namespace
+        matcher = phone if matcher.to_s == 'phone'
+        if matcher.respond_to?("each")
+          matcher.each do |match|
+            raise ArgumentError, "Matcher must be Regexp, String" if match.class != Regexp && match.class != String
+            namespace = SMSXY::Router::Namespace.new
+            namespace.matcher = match
+            namespace.instance_eval(&routes)
+            namespace.parent = self if self.respond_to? "matcher"
+            namespaces[match] = namespace
+          end
+        else
+          raise ArgumentError, "Matcher must be Regexp, String" if matcher.class != Regexp && matcher.class != String
+          namespace = SMSXY::Router::Namespace.new
+          namespace.matcher = matcher
+          namespace.instance_eval(&routes)
+          namespace.parent = self if self.respond_to? "matcher"
+          namespaces[matcher] = namespace
+          namespace
+        end
       end
 
       def receive(message)
@@ -94,6 +115,10 @@ module SMSXY
 
       def email
         EMAIL_REGEX
+      end
+
+      def phone
+        [TEN_DIGIT_US_PHONE_NUMBER, TEN_DIGIT_US_PHONE_NUMBER_WITH_ONE, INTERNATIONAL_PHONE_NUMBER]
       end
 
       def default_help
