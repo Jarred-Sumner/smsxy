@@ -14,4 +14,12 @@ module SMSXY
     SMSXY::Router.receive(sms)
   end
 
+  def self.start_logging!
+    @@logging = true 
+  end
+
+  def self.log(message)
+    puts message if @@logging == true
+  end
+
 end

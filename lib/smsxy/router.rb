@@ -9,6 +9,7 @@ module SMSXY
     end
 
     def self.receive(sms)
+      SMSXY.log("Receiving SMS from #{sms.phone}: #{sms.full_message}")
       @root_namespace.receive(sms)
     end
 
