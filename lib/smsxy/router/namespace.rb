@@ -45,10 +45,12 @@ module SMSXY
       end
 
       def before!
+        SMSXY.log("Calling before!")
         @before.call unless @before.nil?
       end
 
       def after(&block)
+        SMSXY.log("Calling after!")
         @after = block
       end
 
@@ -57,6 +59,7 @@ module SMSXY
       end
 
       def redirect_to(method_sym)
+        SMSXY.log("Redirecting to #{method_sym}") 
         self.current_match = method(method_sym).to_proc
       end
 
@@ -135,6 +138,7 @@ module SMSXY
       end
 
       def reply(message)
+
         SMSXY.text(message, self.sms.phone)
       end
 
