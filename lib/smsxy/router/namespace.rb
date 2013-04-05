@@ -5,6 +5,7 @@ module SMSXY
     class Namespace
       @@sms = nil
       attr_accessor :matcher, :block, :parent, :sms, :current_match
+      RESERVED_INSTANCE_VARIABLES = %w(@matcher @block @parent @sms @current_match @before @after).freeze
       # ::nordoc
       DELIMITER = " ".freeze
       EMAIL_REGEX = /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i.freeze
@@ -12,6 +13,13 @@ module SMSXY
       TEN_DIGIT_US_PHONE_NUMBER           = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/.freeze
       TEN_DIGIT_US_PHONE_NUMBER_WITH_ONE  = /^(?:\+?1[-. ]?)?\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/.freeze
       INTERNATIONAL_PHONE_NUMBER          = /^\+(?:[0-9] ?){6,14}[0-9]$/.freeze
+
+      def transfer_instance_variables_from_parent!
+        variables = self.instance_variables.select { |var| RESERVED_INSTANCE_VARIABLES.include?(var) }
+        variables.each do |var|
+          eval("#{var} = #{self.parent.instance_variable_get(var)}")
+        end
+      end
 
       def match(matcher, &block)
         raise ArgumentError, "You must provide a block with each route" if block.nil?
@@ -46,8 +54,9 @@ module SMSXY
 
       def before!
         SMSXY.log("Calling before!")
-        @before.call unless @before.nil?
         self.parent.before! unless self.parent.nil?
+        transfer_instance_variables_from_parent!
+        @before.call unless @before.nil?
       end
 
       def after(&block)
@@ -56,8 +65,9 @@ module SMSXY
 
       def after!
         SMSXY.log("Calling after!")
-        @after.call unless @after.nil?
         self.parent.after! unless self.parent.nil?
+        transfer_instance_variables_from_parent!
+        @after.call unless @after.nil?
       end
 
       def redirect_to(method_sym)
