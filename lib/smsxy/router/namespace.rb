@@ -5,7 +5,7 @@ module SMSXY
     class Namespace
       @@sms = nil
       attr_accessor :matcher, :block, :parent, :sms, :current_match
-      RESERVED_INSTANCE_VARIABLES = %w(@matcher @block @parent @sms @current_match @before @after namespaces).freeze
+      RESERVED_INSTANCE_VARIABLES = %w(:@matcher :@block :@parent :@sms :@current_match :@before :@after :@namespaces).freeze
       # ::nordoc
       DELIMITER = " ".freeze
       EMAIL_REGEX = /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i.freeze
@@ -16,6 +16,14 @@ module SMSXY
 
       def self.reserved_instance_variables
         RESERVED_INSTANCE_VARIABLES
+      end
+
+      def transfer_instance_variables_from_parent!
+        vars = self.parent.instance_variables.reject { |var| SMSXY::Router::Namespace.reserved_instance_variables.include?(var) }
+        vars.each do |var|
+          SMSXY.log("Transferring #{var.to_s} from parent")
+          self.instance_variable_set(var, self.parent.instance_variable_get(var))
+        end
       end
 
       def match(matcher, &block)
@@ -51,11 +59,9 @@ module SMSXY
 
       def before!
         SMSXY.log("Calling before!")
-        current_instance_variables = self.parent.instance_variables
-        self.parent.before! unless self.parent.nil?
-        new_instance_variables = current_instance_variables - self.parent.instance_variables
-        new_instance_variables.each do |var|
-          eval("#{val} = #{self.parent.get_instance_variable(var)}")
+        unless self.parent.nil?
+          self.parent.before! 
+          transfer_instance_variables_from_parent!
         end
         @before.call unless @before.nil?
       end
@@ -66,11 +72,9 @@ module SMSXY
 
       def after!
         SMSXY.log("Calling after!")
-        current_instance_variables = self.parent.instance_variables
-        self.parent.after! unless self.parent.nil?
-        new_instance_variables = current_instance_variables - self.parent.instance_variables
-        new_instance_variables.each do |var|
-          eval("#{val} = #{self.parent.get_instance_variable(var)}")
+        unless self.parent.nil?
+          self.parent.after!
+          transfer_instance_variables_from_parent!
         end
         @after.call unless @after.nil?
       end
