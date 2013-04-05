@@ -47,9 +47,10 @@ module SMSXY
       end
 
       def self.receive(params)
-        sms         = SMSXY::SMS.new
-        sms.message = params['Body']
-        sms.phone   = params['From']
+        sms               = SMSXY::SMS.new
+        sms.message       = params['Body']
+        sms.full_message  = sms.message
+        sms.phone         = params['From']
         sms
       end
 
