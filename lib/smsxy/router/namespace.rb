@@ -47,15 +47,17 @@ module SMSXY
       def before!
         SMSXY.log("Calling before!")
         @before.call unless @before.nil?
+        self.parent.before! if self.parent.present?
       end
 
       def after(&block)
-        SMSXY.log("Calling after!")
         @after = block
       end
 
       def after!
+        SMSXY.log("Calling after!")
         @after.call unless @after.nil?
+        self.parent.after! if self.parent.present?
       end
 
       def redirect_to(method_sym)
