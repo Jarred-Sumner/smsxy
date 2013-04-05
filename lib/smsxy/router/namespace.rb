@@ -5,7 +5,7 @@ module SMSXY
     class Namespace
       @@sms = nil
       attr_accessor :matcher, :block, :parent, :sms, :current_match
-      RESERVED_INSTANCE_VARIABLES = %w(@matcher @block @parent @sms @current_match @before @after).freeze
+      RESERVED_INSTANCE_VARIABLES = %w(@matcher @block @parent @sms @current_match @before @after namespaces).freeze
       # ::nordoc
       DELIMITER = " ".freeze
       EMAIL_REGEX = /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i.freeze
@@ -14,11 +14,8 @@ module SMSXY
       TEN_DIGIT_US_PHONE_NUMBER_WITH_ONE  = /^(?:\+?1[-. ]?)?\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/.freeze
       INTERNATIONAL_PHONE_NUMBER          = /^\+(?:[0-9] ?){6,14}[0-9]$/.freeze
 
-      def transfer_instance_variables_from_parent!
-        variables = self.parent.instance_variables.select { |var| RESERVED_INSTANCE_VARIABLES.include?(var) }
-        variables.each do |var|
-          eval("#{var} = #{self.parent.instance_variable_get(var)}")
-        end
+      def self.reserved_instance_variables
+        RESERVED_INSTANCE_VARIABLES
       end
 
       def match(matcher, &block)
@@ -54,8 +51,12 @@ module SMSXY
 
       def before!
         SMSXY.log("Calling before!")
+        current_instance_variables = self.parent.instance_variables
         self.parent.before! unless self.parent.nil?
-        transfer_instance_variables_from_parent!
+        new_instance_variables = current_instance_variables - self.parent.instance_variables
+        new_instance_variables.each do |var|
+          eval("#{val} = #{self.parent.get_instance_variable(var)}")
+        end
         @before.call unless @before.nil?
       end
 
@@ -65,8 +66,12 @@ module SMSXY
 
       def after!
         SMSXY.log("Calling after!")
+        current_instance_variables = self.parent.instance_variables
         self.parent.after! unless self.parent.nil?
-        transfer_instance_variables_from_parent!
+        new_instance_variables = current_instance_variables - self.parent.instance_variables
+        new_instance_variables.each do |var|
+          eval("#{val} = #{self.parent.get_instance_variable(var)}")
+        end
         @after.call unless @after.nil?
       end
 
