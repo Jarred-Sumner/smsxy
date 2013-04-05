@@ -4,8 +4,7 @@ module SMSXY
   class Router
     class Namespace
       @@sms = nil
-      attr_accessor :matcher, :block, :parent, :sms, :current_match
-      RESERVED_INSTANCE_VARIABLES = %w(:@matcher :@block :@parent :@sms :@current_match :@before :@after :@namespaces).freeze
+      attr_accessor :matcher, :block, :parent, :sms, :current_match, :vars
       # ::nordoc
       DELIMITER = " ".freeze
       EMAIL_REGEX = /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i.freeze
@@ -14,16 +13,19 @@ module SMSXY
       TEN_DIGIT_US_PHONE_NUMBER_WITH_ONE  = /^(?:\+?1[-. ]?)?\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/.freeze
       INTERNATIONAL_PHONE_NUMBER          = /^\+(?:[0-9] ?){6,14}[0-9]$/.freeze
 
-      def self.reserved_instance_variables
-        RESERVED_INSTANCE_VARIABLES
+      def let(symbol, &block)
+        self.vars ||= {}
+        self.vars[symbol] = block
+        define_method(symbol.to_s) { self.vars[symbol] }
       end
 
-      def transfer_instance_variables_from_parent!
-        vars = self.parent.instance_variables.reject { |var| SMSXY::Router::Namespace.reserved_instance_variables.include?(var) }
-        vars.each do |var|
-          SMSXY.log("Transferring #{var.to_s} from parent")
-          self.instance_variable_set(var, self.parent.instance_variable_get(var))
+      def combined_vars
+        lets = self.vars || []
+        if self.parent.present?
+          lets << self.parent.vars unless self.parent.vars.empty?
+          lets.flatten!
         end
+        lets
       end
 
       def match(matcher, &block)
@@ -61,7 +63,6 @@ module SMSXY
         SMSXY.log("Calling before!")
         unless self.parent.nil?
           self.parent.before! 
-          transfer_instance_variables_from_parent!
         end
         @before.call unless @before.nil?
       end
@@ -74,7 +75,6 @@ module SMSXY
         SMSXY.log("Calling after!")
         unless self.parent.nil?
           self.parent.after!
-          transfer_instance_variables_from_parent!
         end
         @after.call unless @after.nil?
       end
@@ -159,7 +159,6 @@ module SMSXY
       end
 
       def reply(message)
-
         SMSXY.text(message, self.sms.phone)
       end
 
@@ -173,6 +172,14 @@ module SMSXY
 
       def default_help
         Proc.new { puts "No matcher for message: \"#{self.sms.message}\"! Also, no \"help\" block to handle unmatched messages." }
+      end
+
+      def method_missing(meth, *args, &blk)
+        if self.combined_vars[meth]
+          self.combined_vars[meth].call
+        else
+          super
+        end
       end
 
     end
