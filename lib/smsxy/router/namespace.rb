@@ -15,7 +15,7 @@ module SMSXY
       INTERNATIONAL_PHONE_NUMBER          = /^\+(?:[0-9] ?){6,14}[0-9]$/.freeze
 
       def transfer_instance_variables_from_parent!
-        variables = self.instance_variables.select { |var| RESERVED_INSTANCE_VARIABLES.include?(var) }
+        variables = self.parent.instance_variables.select { |var| RESERVED_INSTANCE_VARIABLES.include?(var) }
         variables.each do |var|
           eval("#{var} = #{self.parent.instance_variable_get(var)}")
         end
