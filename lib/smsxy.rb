@@ -1,3 +1,5 @@
+require 'logger'
+
 require "smsxy/version"
 require 'smsxy/router'
 require 'smsxy/sms'
@@ -19,7 +21,17 @@ module SMSXY
   end
 
   def self.log(message)
-    puts message# if @@logging == true
+    self.logger.info(message) if @@logging == true
   end
+
+  def self.logger=(logger)
+    @logger = logger
+  end
+
+  def self.logger
+    @logger = Logger.new(STDOUT)
+  end
+
+
 
 end
