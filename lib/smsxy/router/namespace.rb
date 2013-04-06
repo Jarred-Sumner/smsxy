@@ -167,7 +167,7 @@ module SMSXY
       end
 
       def default_help
-        Proc.new { puts "No matcher for message: \"#{self.sms.message}\"! Also, no \"help\" block to handle unmatched messages." }
+        Proc.new { SMSXY.log "No matcher for message: \"#{self.sms.message}\"! Also, no \"help\" block to handle unmatched messages." }
       end
 
       def method_missing(meth, *args, &blk)
