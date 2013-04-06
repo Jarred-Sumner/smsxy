@@ -29,7 +29,7 @@ module SMSXY
   end
 
   def self.logger
-    @logger = Logger.new(STDOUT)
+    @logger = Logger.new("log/smsxy.log")
   end
 
 
