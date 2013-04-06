@@ -4,7 +4,7 @@ require 'smsxy/sms'
 require 'smsxy/adaptor'
 
 module SMSXY
-
+  @@logging = false
   def self.text(message, to)
     SMSXY::Adaptor.adaptor.text(message, to)
   end
@@ -19,7 +19,7 @@ module SMSXY
   end
 
   def self.log(message)
-    puts message if @@logging == true
+    puts message# if @@logging == true
   end
 
 end

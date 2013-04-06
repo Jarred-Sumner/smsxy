@@ -16,16 +16,12 @@ module SMSXY
       def let(symbol, &block)
         self.vars ||= {}
         self.vars[symbol] = block
-        define_method(symbol.to_s) { self.vars[symbol] }
       end
 
       def combined_vars
-        lets = self.vars || []
-        if self.parent.present?
-          lets << self.parent.vars unless self.parent.vars.empty?
-          lets.flatten!
-        end
-        lets
+        self.vars ||= {}
+        self.vars.merge!(self.parent.combined_vars) unless self.parent.nil?
+        self.vars
       end
 
       def match(matcher, &block)
@@ -180,25 +176,6 @@ module SMSXY
         else
           super
         end
-      end
-
-      def define_method(name, meth = nil, &prc)
-        meth ||= prc
-
-        if meth.kind_of?(Proc)
-          block_env = meth.block
-          cm = DelegatedMethod.build(:call_on_instance, block_env, true)
-        elsif meth.kind_of?(Method)
-          cm = DelegatedMethod.build(:call, meth, false)
-        elsif meth.kind_of?(UnboundMethod)
-          cm = DelegatedMethod.build(:call_on_instance, meth, true)
-        else
-          raise TypeError, "wrong argument type #{meth.class} (expected Proc/Method)"
-        end
-
-        self.method_table[name.to_sym] = cm
-        VM.reset_method_cache(name.to_sym)
-        meth
       end
 
     end
