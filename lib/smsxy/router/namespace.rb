@@ -74,7 +74,7 @@ module SMSXY
       end
 
       def redirect_to(method_sym)
-        SMSXY.log("Redirecting to #{method_sym}", :tag => self.sms.phone) 
+        SMSXY.log("Redirecting to #{method_sym}", :tag => self.sms) 
         self.current_match = method(method_sym).to_proc
       end
 

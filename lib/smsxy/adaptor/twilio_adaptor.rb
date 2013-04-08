@@ -3,14 +3,18 @@ module SMSXY
   module Adaptor
     class TwilioAdaptor
     
-      def self.text(message, to)
+      def self.text(message, to, sms = nil)
         raise ArgumentError, "Phone number cannot be blank" if to.nil? || to.length == 0
         raise ArgumentError, "Message cannot be blank" if message.nil? || message.length == 0
         raise ArgumentError, "Sending outgoing text messages requires an incoming phone number" if adaptor.phone.nil? || adaptor.phone.length == 0
         raise ArgumentError, "Twilio requires an Account SID to send outgoing text messages. Set SMSXY::Adaptor::Twilio.account_sid to your Account SID" if self.account_sid.nil?
         raise ArgumentError, "Twilio requires a token to send outgoing text messages. Set SMSXY::Adaptor::Twilio.token to your token" if self.token.nil?
         message_parts = message.split(/(.{160})/)
-        SMSXY.log("Outgoing SMS: \"#{message}\"", :tag => to)
+        if sms.nil?
+          SMSXY.log("Outgoing SMS: \"#{message}\"", :tag => to)
+        else
+          SMSXY.log("Outgoing SMS: \"#{message}\"", :tag => sms)
+        end
         message_parts.each do |message_part|
           params =
           {
