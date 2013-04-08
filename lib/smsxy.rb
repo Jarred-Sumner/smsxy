@@ -23,7 +23,7 @@ module SMSXY
   def self.log(message, options)
     tag = ''
     if options[:tag].class == SMSXY::SMS
-      tag = "[#{options[:tag].unique_id]} [#{options[:tag].phone}]"
+      tag = "[#{options[:tag].unique_id}] [#{options[:tag].phone}]"
     else
       tag = "#{options[:tag]}"
     end
