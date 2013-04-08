@@ -10,7 +10,7 @@ module SMSXY
         raise ArgumentError, "Twilio requires an Account SID to send outgoing text messages. Set SMSXY::Adaptor::Twilio.account_sid to your Account SID" if self.account_sid.nil?
         raise ArgumentError, "Twilio requires a token to send outgoing text messages. Set SMSXY::Adaptor::Twilio.token to your token" if self.token.nil?
         message_parts = message.split(/(.{160})/)
-        SMSXY.log("Sending #{message} to #{to}", :tag => to)
+        SMSXY.log("Outgoing SMS: \"#{message}\"", :tag => to)
         message_parts.each do |message_part|
           params =
           {

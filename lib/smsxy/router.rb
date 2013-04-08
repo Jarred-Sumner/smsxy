@@ -9,7 +9,7 @@ module SMSXY
     end
 
     def self.receive(sms)
-      SMSXY.log("Receiving SMS from #{sms.phone}: #{sms.full_message}", :tag => sms.phone)
+      SMSXY.log("Incoming SMS: \"#{sms.full_message}\"", :tag => sms.phone.gsub(" ", ""))
       @root_namespace.receive(sms)
     end
 
