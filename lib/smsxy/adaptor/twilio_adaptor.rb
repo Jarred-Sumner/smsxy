@@ -50,7 +50,7 @@ module SMSXY
         sms               = SMSXY::SMS.new
         sms.message       = params['Body']
         sms.full_message  = sms.message
-        sms.phone         = params['From']
+        sms.phone         = params['From'].to_phone.to_s
         sms
       end
 
