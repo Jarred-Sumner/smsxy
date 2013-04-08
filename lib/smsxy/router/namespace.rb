@@ -35,7 +35,7 @@ module SMSXY
             matchers[match] = block
           end
         else
-          raise ArgumentError, "Can only match text messages against strings or regexes"
+          raise ArgumentError, "Can only match text messages against strings or regexes, or an array of strings and regexes"
         end
       end
 
@@ -56,7 +56,6 @@ module SMSXY
       end
 
       def before!
-        SMSXY.log("Calling before!")
         unless self.parent.nil?
           self.parent.before! 
         end
@@ -68,7 +67,6 @@ module SMSXY
       end
 
       def after!
-        SMSXY.log("Calling after!")
         unless self.parent.nil?
           self.parent.after!
         end
@@ -76,7 +74,7 @@ module SMSXY
       end
 
       def redirect_to(method_sym)
-        SMSXY.log("Redirecting to #{method_sym}") 
+        SMSXY.log("Redirecting to #{method_sym}", :tag => self.sms.phone) 
         self.current_match = method(method_sym).to_proc
       end
 

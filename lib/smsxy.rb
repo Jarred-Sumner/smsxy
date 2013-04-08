@@ -20,8 +20,10 @@ module SMSXY
     @@logging = true 
   end
 
-  def self.log(message)
-    self.logger.info(message) if @@logging == true
+  def self.log(message, options)
+    tag = ''
+    tag = "[#{options[:tag]}] " unless options[:tag].nil?
+    self.logger.info(tag + message) if @@logging == true
   end
 
   def self.logger=(logger)
