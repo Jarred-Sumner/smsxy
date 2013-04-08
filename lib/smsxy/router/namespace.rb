@@ -108,8 +108,9 @@ module SMSXY
       def match!(message)
         self.current_match = matchers[sms.message]
         before!
-        self.current_match.call
+        return_data = self.current_match.call
         after!
+        return_data
       end
 
       def receive(sms)
