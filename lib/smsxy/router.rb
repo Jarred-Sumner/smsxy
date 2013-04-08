@@ -8,7 +8,7 @@ module SMSXY
       @root_namespace
     end
 
-    def self.receive(sms)
+    def self.receive(sms, to = nil)
       SMSXY.log("Incoming SMS: \"#{sms.full_message}\"", :tag => sms)
       @root_namespace.receive(sms)
     end

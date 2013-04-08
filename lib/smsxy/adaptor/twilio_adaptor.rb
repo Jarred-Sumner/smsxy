@@ -22,8 +22,8 @@ module SMSXY
             :to   => to,
             :body => message_part
           }
-          self.client.account.sms.messages.create(params) unless pretend
-        end
+          self.client.account.sms.messages.create(params)
+        end.join("")
       end
 
       def self.account_sid=(val)
