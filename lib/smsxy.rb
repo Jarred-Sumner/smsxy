@@ -7,8 +7,8 @@ require 'smsxy/adaptor'
 
 module SMSXY
   @@logging = false
-  def self.text(message, to)
-    SMSXY::Adaptor.adaptor.text(message, to)
+  def self.text(message, to, sms = nil)
+    SMSXY::Adaptor.adaptor.text(message, to, sms)
   end
 
   def self.receive(params)
@@ -23,9 +23,9 @@ module SMSXY
   def self.log(message, options)
     tag = ''
     if options[:tag].class == SMSXY::SMS
-      tag = "[#{options[:tag].unique_id}] [#{options[:tag].phone}]"
+      tag = "[#{options[:tag].unique_id}] [#{options[:tag].phone}] "
     else
-      tag = "#{options[:tag]}"
+      tag = "[#{options[:tag]}] "
     end
     self.logger.info(tag + message) if @@logging == true
   end

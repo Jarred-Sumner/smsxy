@@ -153,7 +153,7 @@ module SMSXY
       end
 
       def reply(message)
-        SMSXY.text(message, self.sms.phone)
+        SMSXY.text(message, self.sms.phone, self.sms)
       end
 
       def email
