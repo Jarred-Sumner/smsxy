@@ -4,7 +4,8 @@ module SMSXY
   class Router
     class Namespace
       @@sms = nil
-      attr_accessor :matcher, :block, :parent, :sms, :current_match, :vars
+      attr_accessor :matcher, :block, :parent, :sms, :vars
+      attr_reader :current_match
       # ::nordoc
       DELIMITER = " ".freeze
       EMAIL_REGEX = /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i.freeze
@@ -22,6 +23,11 @@ module SMSXY
         self.vars ||= {}
         self.vars.merge!(self.parent.combined_vars) unless self.parent.nil?
         self.vars
+      end
+
+      def current_match=(val)
+        self.parent.current_match = val unless self.parent.present?
+        self.current_match = val
       end
 
       def match(matcher, &block)

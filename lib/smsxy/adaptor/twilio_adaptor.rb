@@ -4,7 +4,7 @@ module SMSXY
     class TwilioAdaptor
     
       def self.text(message, to, sms = nil, pretend = false)
-        raise ArgumentError, "Invalid phone number: #{to}" if to.nil? || to.length == 0
+        raise ArgumentError, "Invalid phone number: #{to.inspect}" if to.nil? || to.length == 0
         raise ArgumentError, "Message cannot be blank" if message.nil?
         raise ArgumentError, "Sending outgoing text messages requires an incoming phone number" if adaptor.phone.nil? || adaptor.phone.length == 0
         raise ArgumentError, "Twilio requires an Account SID to send outgoing text messages. Set SMSXY::Adaptor::Twilio.account_sid to your Account SID" if self.account_sid.nil?
