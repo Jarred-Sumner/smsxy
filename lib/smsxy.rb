@@ -8,7 +8,14 @@ require 'smsxy/adaptor'
 module SMSXY
   @@logging = false
   def self.text(message, to, sms = nil)
-    SMSXY::Adaptor.adaptor.text(message, to, sms, SMSXY.pretend?)
+    if sms.nil?
+      sms = SMS.new
+      sms.full_message = message
+      sms.message      = message
+      sms.phone        = to
+    end
+    response = SMSXY::Adaptor.adaptor.text(sms)
+    self.messages.push(sms) if self.pretend?
   end
 
   def self.receive(params)
@@ -18,6 +25,10 @@ module SMSXY
 
   def self.start_logging!
     @@logging = true 
+  end
+
+  def self.messages
+    @messages ||= []
   end
 
   def self.log(message, options)

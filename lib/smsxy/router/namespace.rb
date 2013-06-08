@@ -26,8 +26,8 @@ module SMSXY
       end
 
       def current_match=(val)
-        self.parent.current_match = val unless self.parent.present?
-        self.current_match = val
+        self.parent.current_match = val unless self.parent.nil?
+        @current_match = val
       end
 
       def match(matcher, &block)
