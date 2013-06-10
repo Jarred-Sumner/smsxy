@@ -3,7 +3,7 @@ module SMSXY
   module Adaptor
     class TwilioAdaptor
     
-      def self.text(sms)
+      def self.text(sms, original_sms = nil)
         to = sms.phone
         message = sms.message
         raise ArgumentError, "Invalid phone number: #{to.inspect}" if to.nil? || to.length == 0
@@ -12,7 +12,7 @@ module SMSXY
         raise ArgumentError, "Twilio requires an Account SID to send outgoing text messages. Set SMSXY::Adaptor::Twilio.account_sid to your Account SID" if self.account_sid.nil?
         raise ArgumentError, "Twilio requires a token to send outgoing text messages. Set SMSXY::Adaptor::Twilio.token to your token" if self.token.nil?
         message_parts = message.split(/(.{144})/)
-        if sms.nil?
+        if original_sms.nil?
           SMSXY.log("Outgoing SMS: \"#{message}\"", :tag => to)
         else
           SMSXY.log("Outgoing SMS: \"#{message}\"", :tag => sms)
