@@ -1,4 +1,5 @@
 require 'logger'
+require 'phones'
 
 require "smsxy/version"
 require 'smsxy/router'
