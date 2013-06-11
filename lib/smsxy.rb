@@ -56,6 +56,10 @@ module SMSXY
     @pretend == true
   end
 
+  def self.real?
+    !self.pretend?
+  end
+
 
 
 end

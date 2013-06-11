@@ -8,9 +8,9 @@ module SMSXY
         message = sms.message
         raise ArgumentError, "Invalid phone number: #{to.inspect}" if to.nil? || to.length == 0
         raise ArgumentError, "Message cannot be blank" if message.nil?
-        raise ArgumentError, "Sending outgoing text messages requires an incoming phone number" if adaptor.phone.nil? || adaptor.phone.length == 0
-        raise ArgumentError, "Twilio requires an Account SID to send outgoing text messages. Set SMSXY::Adaptor::Twilio.account_sid to your Account SID" if self.account_sid.nil?
-        raise ArgumentError, "Twilio requires a token to send outgoing text messages. Set SMSXY::Adaptor::Twilio.token to your token" if self.token.nil?
+        raise ArgumentError, "Sending outgoing text messages requires an incoming phone number" if SMSXY.real? && adaptor.phone.nil? || adaptor.phone.length == 0
+        raise ArgumentError, "Twilio requires an Account SID to send outgoing text messages. Set SMSXY::Adaptor::Twilio.account_sid to your Account SID" if SMSXY.real? && self.account_sid.nil?
+        raise ArgumentError, "Twilio requires a token to send outgoing text messages. Set SMSXY::Adaptor::Twilio.token to your token" if SMSXY.real? && self.token.nil?
         message_parts = message.split(/(.{144})/)
         if original_sms.nil?
           SMSXY.log("Outgoing SMS: \"#{message}\"", :tag => to)
