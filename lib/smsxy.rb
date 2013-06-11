@@ -57,7 +57,7 @@ module SMSXY
   end
 
   def self.real?
-    !self.pretend?
+    @pretend == false
   end
 
 
