@@ -2,7 +2,7 @@
 
 SMSXY is a microframework for receiving, replying to, and sending text messages. It makes it dramatically easier to write SMS apps. 
 
-Unfortunately, I don't have have time to document this right now. Here's a code sample:
+Here's a code sample:
 
 ```ruby
 require 'smsxy'
